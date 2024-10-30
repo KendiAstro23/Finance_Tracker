@@ -1,24 +1,21 @@
+// src/App.js
 import React from 'react';
-import './App.css';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Dashboard from './components/Dashboard';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './components/Login';
 import Signup from './components/Signup';
-import Footer from './components/Footer';
+import Dashboard from './components/Dashboard';
+import PrivateRoute from './components/PrivateRoute'; // Import the private route
 
 function App() {
-  return (
-    <div className="App">
-    <Router>
-        <Routes>
-            <Route path="/" element={<Login />} /> {/* Default route */}
-            <Route path="/signup" element={<Signup />} /> {/* Signup route */}
-            <Route path="/dashboard" element={<Dashboard />} /> {/* Dashboard route */}
-                </Routes>
-            </Router>
-    <Footer /> 
-</div>
-  );
+    return (
+        <Router>
+            <Routes>
+                <Route path="/" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+            </Routes>
+        </Router>
+    );
 }
 
 export default App;

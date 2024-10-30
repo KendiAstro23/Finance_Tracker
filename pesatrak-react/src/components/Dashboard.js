@@ -1,5 +1,8 @@
 // src/components/Dashboard.js
-
+import React from 'react';
+import { auth } from '../firebase';
+import { signOut } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
 import React, { useState } from 'react';
 import {
   XAxis,
@@ -40,6 +43,20 @@ const Dashboard = () => {
     setAmount('');
     setDate('');
   };
+
+  const navigate = useNavigate();
+
+    const handleLogout = async () => {
+        await signOut(auth);
+        navigate('/'); // Redirect to login after logout
+    };
+
+    return (
+        <div>
+            <h2>Dashboard</h2>
+            <button onClick={handleLogout}>Logout</button>
+        </div>
+    );
 
   // Calculate cumulative spending
   const cumulativeData = spendingData.reduce((acc, curr) => {
