@@ -3,6 +3,8 @@ import axios from 'axios';
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import AlertNotification from './AlertNotification';
 
+const MAX_SPENDING_LIMIT = 20000;
+
 const Dashboard = () => {
   const [transactions, setTransactions] = useState([]);
   const [alert, setAlert] = useState('');
