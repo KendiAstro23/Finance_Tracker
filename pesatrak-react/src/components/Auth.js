@@ -1,60 +1,55 @@
 // src/components/Auth.js
 import React, { useState } from 'react';
-import { auth } from '../firebase'; // Adjust the path if necessary
+import { auth } from '../firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { useNavigate } from 'react-router-dom';
+import './Auth.css'; // Make sure you import your CSS file
 
 const Auth = ({ setIsAuthenticated }) => {
-    const [isSignup, setIsSignup] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const navigate = useNavigate();
+    const [isLogin, setIsLogin] = useState(true);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (isSignup) {
-            // Handle signup
-            try {
-                await createUserWithEmailAndPassword(auth, email, password);
-                setIsAuthenticated(true);
-                navigate('/dashboard'); // Redirect to dashboard after signup
-            } catch (error) {
-                alert(error.message);
-            }
-        } else {
-            // Handle login
+        if (isLogin) {
             try {
                 await signInWithEmailAndPassword(auth, email, password);
                 setIsAuthenticated(true);
-                navigate('/dashboard'); // Redirect to dashboard after login
             } catch (error) {
-                alert(error.message);
+                console.error(error);
+            }
+        } else {
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+                setIsAuthenticated(true);
+            } catch (error) {
+                console.error(error);
             }
         }
     };
 
     return (
-        <div>
-            <h2>{isSignup ? 'Sign Up' : 'Login'}</h2>
+        <div className="auth-container">
+            <h1>{isLogin ? 'Login' : 'Sign Up'}</h1>
             <form onSubmit={handleSubmit}>
                 <input
                     type="email"
+                    placeholder="Email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Email"
                     required
                 />
                 <input
                     type="password"
+                    placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Password"
                     required
                 />
-                <button type="submit">{isSignup ? 'Sign Up' : 'Login'}</button>
+                <button type="submit">{isLogin ? 'Login' : 'Sign Up'}</button>
             </form>
-            <button onClick={() => setIsSignup(!isSignup)}>
-                Switch to {isSignup ? 'Login' : 'Sign Up'}
+            <button onClick={() => setIsLogin(!isLogin)}>
+                Switch to {isLogin ? 'Sign Up' : 'Login'}
             </button>
         </div>
     );

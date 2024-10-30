@@ -1,0 +1,12 @@
+/* src/styles/graphs.css */
+.graph-container {
+    width: 100%;  /* Ensures the container takes the full width */
+    max-width: 100%; /* Adjust as needed */
+    margin: 0 auto; /* Centers the container */
+    padding: 20px;
+}
+
+.graph-title {
+    text-align: center;       /* Centers the titles of the graphs */
+    margin-bottom: 20px;      /* Adds some space below the title */
+}
