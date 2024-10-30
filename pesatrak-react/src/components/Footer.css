@@ -1,0 +1,10 @@
+/* src/components/Footer.css */
+.footer {
+    background-color: #007bff; /* Change to your desired background color */
+    color: white; /* Text color */
+    text-align: center;
+    padding: 10px;
+    position: relative; /* Or absolute if you want to fix it at the bottom */
+    bottom: 0;
+    width: 100%;
+}
