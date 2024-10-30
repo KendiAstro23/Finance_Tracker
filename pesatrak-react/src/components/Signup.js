@@ -1,29 +1,28 @@
 // src/components/Signup.js
 import React, { useState } from 'react';
-import { auth } from '../firebase'; // Import Firebase auth
+import { auth } from '../firebase'; // Make sure to import auth
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 
 const Signup = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
+    const handleSignup = async (e) => {
         e.preventDefault();
         try {
             await createUserWithEmailAndPassword(auth, email, password);
-            navigate('/'); // Redirect to login after successful signup
+            navigate('/dashboard'); // Redirect to dashboard on successful signup
         } catch (error) {
-            setError(error.message);
+            alert(error.message); // Handle error appropriately
         }
     };
 
     return (
         <div>
             <h2>Signup</h2>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSignup}>
                 <input
                     type="email"
                     placeholder="Email"
@@ -40,7 +39,6 @@ const Signup = () => {
                 />
                 <button type="submit">Sign Up</button>
             </form>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
         </div>
     );
 };

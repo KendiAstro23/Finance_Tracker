@@ -1,163 +1,107 @@
 // src/components/Dashboard.js
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-import Auth from './Auth'; // Import the Auth component
-
-import {
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  AreaChart,
-  Area,
-} from 'recharts';
+import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
+import { db } from '../firebase'; // Import Firestore
+import { useAuth } from '../context/AuthContext'; // Import the Auth context
 
 const MAX_SPENDING_LIMIT = 1000; // Example limit
 
 const Dashboard = () => {
-  const [spendingData, setSpendingData] = useState([]);
-  const [product, setProduct] = useState('');
-  const [amount, setAmount] = useState('');
-  const [date, setDate] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(false); // State to track authentication
+    const { currentUser } = useAuth(); // Get the current authenticated user from context
+    const [spendingData, setSpendingData] = useState([]);
+    const [product, setProduct] = useState('');
+    const [amount, setAmount] = useState('');
+    const [date, setDate] = useState('');
+    const navigate = useNavigate();
 
-  const navigate = useNavigate();
+    useEffect(() => {
+        const fetchSpendingData = async () => {
+            if (currentUser) {
+                const q = query(collection(db, "spendingEntries"), where("userId", "==", currentUser.uid));
+                const querySnapshot = await getDocs(q);
+                const entries = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                setSpendingData(entries);
+            }
+        };
+        fetchSpendingData();
+    }, [currentUser]);
 
-  const handleAddSpending = (e) => {
-    e.preventDefault();
-    if (!product || !amount || !date) {
-      alert('Please fill in all fields');
-      return;
-    }
+    const handleAddSpending = async (e) => {
+        e.preventDefault();
+        if (!product || !amount || !date) {
+            alert('Please fill in all fields');
+            return;
+        }
 
-    const newEntry = {
-      date,
-      product,
-      amount: parseFloat(amount),
+        const newEntry = {
+            date,
+            product,
+            amount: parseFloat(amount),
+            userId: currentUser.uid // Store userId with the entry
+        };
+
+        try {
+            await addDoc(collection(db, "spendingEntries"), newEntry);
+            setSpendingData((prevData) => [...prevData, newEntry]);
+            setProduct('');
+            setAmount('');
+            setDate('');
+        } catch (error) {
+            console.error("Error adding document: ", error);
+        }
     };
 
-    setSpendingData((prevData) => [...prevData, newEntry]);
-    setProduct('');
-    setAmount('');
-    setDate('');
-  };
+    const handleLogout = async () => {
+        await signOut(auth);
+        navigate('/'); // Redirect to login after logout
+    };
 
-  const handleLogout = async () => {
-    await signOut(auth);
-    setIsAuthenticated(false); // Set authenticated state to false
-    navigate('/'); // Redirect to login after logout
-  };
-
-  // Calculate cumulative spending
-  const cumulativeData = spendingData.reduce((acc, curr) => {
-    const dateKey = curr.date;
-    if (!acc[dateKey]) {
-      acc[dateKey] = { date: dateKey, amount: 0 };
-    }
-    acc[dateKey].amount += curr.amount;
-    return acc;
-  }, {});
-
-  const cumulativeSpending = Object.values(cumulativeData).reduce(
-    (acc, curr) => {
-      const previousAmount = acc.length ? acc[acc.length - 1].amount : 0;
-      acc.push({ date: curr.date, amount: previousAmount + curr.amount });
-      return acc;
-    },
-    []
-  );
-
-  return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px' }}>
-        <h1>Dashboard</h1>
-        {isAuthenticated && <button onClick={handleLogout}>Logout</button>}
-      </div>
-
-      {/* Show Auth component if not authenticated */}
-      {!isAuthenticated ? (
-        <Auth setIsAuthenticated={setIsAuthenticated} />
-      ) : (
+    return (
         <div>
-          <h2>Your Spending Limit: ${MAX_SPENDING_LIMIT}</h2>
+            <h2>Dashboard</h2>
+            <button onClick={handleLogout}>Logout</button>
 
-          {/* Input Form for Daily Spending */}
-          <form onSubmit={handleAddSpending}>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-            />
-            <input
-              type="text"
-              value={product}
-              onChange={(e) => setProduct(e.target.value)}
-              placeholder="Product"
-              required
-            />
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="Amount"
-              required
-            />
-            <button type="submit">Add Spending</button>
-          </form>
+            <h2>Your Spending Limit: ${MAX_SPENDING_LIMIT}</h2>
 
-          {/* Displaying spending entries for reference */}
-          <h3>Spending Entries</h3>
-          <ul>
-            {spendingData.map((entry, index) => (
-              <li key={index}>
-                {entry.date} - {entry.product}: ${entry.amount}
-              </li>
-            ))}
-          </ul>
+            {/* Input Form for Daily Spending */}
+            <form onSubmit={handleAddSpending}>
+                <input
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    required
+                />
+                <input
+                    type="text"
+                    value={product}
+                    onChange={(e) => setProduct(e.target.value)}
+                    placeholder="Product"
+                    required
+                />
+                <input
+                    type="number"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder="Amount"
+                    required
+                />
+                <button type="submit">Add Spending</button>
+            </form>
 
-          {/* Graph for Daily Spending (Bar Chart) */}
-          <h2>Daily Spending</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={spendingData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="amount" fill="#AFEEEE" />
-            </BarChart>
-          </ResponsiveContainer>
-
-          {/* Highlighted Area Graph for Cumulative Spending */}
-          <h2>Cumulative Spending (Highlighted Area Graph)</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={cumulativeSpending}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Area
-                type="monotone"
-                dataKey="amount"
-                stroke="#8884d8"
-                fill="rgba(136, 132, 216, 0.5)" // Semi-transparent fill
-                strokeWidth={2} // Stroke width for the line
-                activeDot={{ r: 8 }} // Highlight active dots
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+            {/* Displaying spending entries for reference */}
+            <h3>Spending Entries</h3>
+            <ul>
+                {spendingData.map((entry) => (
+                    <li key={entry.id}>
+                        {entry.date} - {entry.product}: ${entry.amount}
+                    </li>
+                ))}
+            </ul>
         </div>
-      )}
-    </div>
-  );
+    );
 };
 
 export default Dashboard;

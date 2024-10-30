@@ -1,31 +1,30 @@
 // src/App.js
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Login from './components/Login';
-import Signup from './components/Signup';
+import Auth from './components/Auth'; // Import your combined Auth component
 import Dashboard from './components/Dashboard';
 import PrivateRoute from './components/PrivateRoute'; // Import the private route
-import { auth } from './firebase'; // Ensure this path is correct based on your project structure
+import { AuthProvider } from './context/AuthContext'; 
 
 function App() {
-    const [isAuthenticated, setIsAuthenticated] = useState(false); // State to track authentication
-
-    useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged(user => {
-            setIsAuthenticated(!!user); // Set authenticated state based on user
-        });
-
-        return () => unsubscribe(); // Clean up subscription on unmount
-    }, []);
+    const [isAuthenticated, setIsAuthenticated] = useState(false); // State for authentication
 
     return (
+      <AuthProvider>
         <Router>
             <Routes>
-                <Route path="/" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
-                <Route path="/signup" element={<Signup setIsAuthenticated={setIsAuthenticated} />} />
-                <Route path="/dashboard" element={<PrivateRoute isAuthenticated={isAuthenticated}><Dashboard /></PrivateRoute>} />
+                <Route path="/" element={<Auth setIsAuthenticated={setIsAuthenticated} />} /> {/* Pass the prop */}
+                <Route 
+                    path="/dashboard" 
+                    element={
+                        <PrivateRoute isAuthenticated={isAuthenticated}> {/* Use isAuthenticated here */}
+                            <Dashboard />
+                        </PrivateRoute>
+                    } 
+                />
             </Routes>
         </Router>
+      </AuthProvider>  
     );
 }
 

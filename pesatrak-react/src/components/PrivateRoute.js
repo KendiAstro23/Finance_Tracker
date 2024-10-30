@@ -1,13 +1,9 @@
 // src/components/PrivateRoute.js
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { auth } from '../firebase';
-import { useAuthState } from 'react-firebase-hooks/auth'; // Optional helper hook
 
-const PrivateRoute = ({ children }) => {
-    const [user] = useAuthState(auth); // Hook to get current user
-
-    return user ? children : <Navigate to="/" />;
+const PrivateRoute = ({ children, isAuthenticated }) => {
+    return isAuthenticated ? children : <Navigate to="/" />; // Redirect to login if not authenticated
 };
 
 export default PrivateRoute;
