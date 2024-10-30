@@ -2,28 +2,34 @@
 import React, { useState } from 'react';
 import { auth } from '../firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-//import './Auth.css'; // Make sure you import your CSS file
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
+//import './Auth.css'; // Ensure your CSS file is imported
 
 const Auth = ({ setIsAuthenticated }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLogin, setIsLogin] = useState(true);
+    const navigate = useNavigate(); // Initialize navigate
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (isLogin) {
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                setIsAuthenticated(true);
+                setIsAuthenticated(true); // Set authentication state
+                navigate('/dashboard'); // Redirect to dashboard on successful login
             } catch (error) {
-                console.error(error);
+                console.error("Login Error: ", error);
+                alert("Login failed. Please check your credentials."); // Alert on login failure
             }
         } else {
             try {
                 await createUserWithEmailAndPassword(auth, email, password);
-                setIsAuthenticated(true);
+                setIsAuthenticated(true); // Set authentication state
+                navigate('/dashboard'); // Redirect to dashboard after sign-up
             } catch (error) {
-                console.error(error);
+                console.error("Sign Up Error: ", error);
+                alert("Sign Up failed. Please try again."); // Alert on sign-up failure
             }
         }
     };

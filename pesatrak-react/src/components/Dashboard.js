@@ -107,7 +107,7 @@ const Dashboard = () => {
                 {spendingData.map((entry) => (
                     <li key={entry.id}>
                         {entry.date} - {entry.product}: Ksh {entry.amount}
-                        <button onClick={() => handleDelete(entry.id)} style={{ marginLeft: '10px', color: 'red' }}>
+                        <button onClick={() => handleDelete(entry.id)} style={{ marginLeft: '10px', color: 'blue' }}>
                             Delete
                         </button>
                     </li>
