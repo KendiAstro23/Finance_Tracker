@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { auth } from '../firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import './Auth.css'; // Make sure you import your CSS file
+//import './Auth.css'; // Make sure you import your CSS file
 
 const Auth = ({ setIsAuthenticated }) => {
     const [email, setEmail] = useState('');
