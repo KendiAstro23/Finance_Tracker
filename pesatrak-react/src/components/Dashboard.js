@@ -1,49 +1,138 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
-import AlertNotification from './AlertNotification';
+// src/components/Dashboard.js
 
-const MAX_SPENDING_LIMIT = 20000;
+import React, { useState } from 'react';
+import {
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  AreaChart,
+  Area,
+} from 'recharts';
+
+const MAX_SPENDING_LIMIT = 1000; // Example limit
 
 const Dashboard = () => {
-  const [transactions, setTransactions] = useState([]);
-  const [alert, setAlert] = useState('');
+  const [spendingData, setSpendingData] = useState([]);
+  const [product, setProduct] = useState('');
+  const [amount, setAmount] = useState('');
+  const [date, setDate] = useState('');
 
-  useEffect(() => {
-    // Fetch transactions from backend
-    const fetchTransactions = async () => {
-      const response = await axios.get('/api/transactions');
-      setTransactions(response.data);
-      // Calculate cumulative spending
-      checkSpendingLimit(response.data);
-    };
-    fetchTransactions();
-  }, []);
-
-  const checkSpendingLimit = (transactions) => {
-    const totalSpent = transactions.reduce((acc, trans) => acc + trans.amount, 0);
-    if (totalSpent > MAX_SPENDING_LIMIT) {
-      setAlert('You have exceeded your spending limit!');
+  const handleAddSpending = (e) => {
+    e.preventDefault();
+    if (!product || !amount || !date) {
+      alert('Please fill in all fields');
+      return;
     }
+
+    const newEntry = {
+      date,
+      product,
+      amount: parseFloat(amount),
+    };
+
+    setSpendingData((prevData) => [...prevData, newEntry]);
+    setProduct('');
+    setAmount('');
+    setDate('');
   };
 
-  // Process data for charts
-  const dailyData = transactions.map(trans => ({
-    date: trans.date,
-    amount: trans.amount,
-  }));
+  // Calculate cumulative spending
+  const cumulativeData = spendingData.reduce((acc, curr) => {
+    const dateKey = curr.date;
+    if (!acc[dateKey]) {
+      acc[dateKey] = { date: dateKey, amount: 0 };
+    }
+    acc[dateKey].amount += curr.amount;
+    return acc;
+  }, {});
+
+  const cumulativeSpending = Object.values(cumulativeData).reduce(
+    (acc, curr) => {
+      const previousAmount = acc.length ? acc[acc.length - 1].amount : 0;
+      acc.push({ date: curr.date, amount: previousAmount + curr.amount });
+      return acc;
+    },
+    []
+  );
 
   return (
     <div>
-      {alert && <AlertNotification message={alert} />}
-      <h2>Spending Overview</h2>
-      <LineChart width={600} height={300} data={dailyData}>
-        <XAxis dataKey="date" />
-        <YAxis />
-        <Tooltip />
-        <CartesianGrid strokeDasharray="3 3" />
-        <Line type="monotone" dataKey="amount" stroke="#8884d8" />
-      </LineChart>
+      <h1>Dashboard</h1>
+      <h2>Your Spending Limit: ${MAX_SPENDING_LIMIT}</h2>
+
+      {/* Input Form for Daily Spending */}
+      <form onSubmit={handleAddSpending}>
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          required
+        />
+        <input
+          type="text"
+          value={product}
+          onChange={(e) => setProduct(e.target.value)}
+          placeholder="Product"
+          required
+        />
+        <input
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="Amount"
+          required
+        />
+        <button type="submit">Add Spending</button>
+      </form>
+
+      {/* Displaying spending entries for reference */}
+      <h3>Spending Entries</h3>
+      <ul>
+        {spendingData.map((entry, index) => (
+          <li key={index}>
+            {entry.date} - {entry.product}: ${entry.amount}
+          </li>
+        ))}
+      </ul>
+
+      {/* Graph for Daily Spending (Bar Chart) */}
+      <h2>Daily Spending</h2>
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart data={spendingData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="date" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Bar dataKey="amount" fill="#82ca9d" />
+        </BarChart>
+      </ResponsiveContainer>
+
+      {/* Highlighted Area Graph for Cumulative Spending */}
+      <h2>Cumulative Spending (Highlighted Area Graph)</h2>
+      <ResponsiveContainer width="100%" height={300}>
+        <AreaChart data={cumulativeSpending}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="date" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Area
+            type="monotone"
+            dataKey="amount"
+            stroke="#8884d8"
+            fill="rgba(136, 132, 216, 0.5)" // Semi-transparent fill
+            strokeWidth={2} // Stroke width for the line
+            activeDot={{ r: 8 }} // Highlight active dots
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+
     </div>
   );
 };

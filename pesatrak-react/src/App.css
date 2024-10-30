@@ -1,5 +1,12 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-color: rgb(192, 158, 172); /* Set background color to blue */
+} 
+
 .App {
   text-align: center;
+  background-color: rgba(185, 109, 147, 0.24);
 }
 
 .App-logo {
