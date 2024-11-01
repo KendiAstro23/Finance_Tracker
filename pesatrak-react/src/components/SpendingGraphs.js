@@ -1,3 +1,4 @@
+// src/components/SpendingGraphs.js
 import React, { useEffect, useState } from 'react';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import {
@@ -24,6 +25,9 @@ const SpendingGraphs = () => {
                 const q = query(collection(db, 'spendingEntries'), where('userId', '==', user.uid));
                 const querySnapshot = await getDocs(q);
                 const entries = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                // Sort entries by date in ascending order
+                entries.sort((a, b) => new Date(a.date) - new Date(b.date));
                 setSpendingData(entries);
 
                 // Calculate cumulative spending
@@ -32,6 +36,9 @@ const SpendingGraphs = () => {
                     acc.push({ date: entry.date, amount: lastAmount + entry.amount });
                     return acc;
                 }, []);
+                
+                // Sort cumulative data by date
+                cumulativeData.sort((a, b) => new Date(a.date) - new Date(b.date));
                 setCumulativeSpending(cumulativeData);
             }
         };
