@@ -1,8 +1,8 @@
-// src/components/Login.js
 import React, { useState } from 'react';
 import { auth } from '../firebase'; // Ensure you are importing auth
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
+import './Login.css'; // Optional: Include custom styles for better layout
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -20,8 +20,8 @@ const Login = () => {
     };
 
     return (
-        <div>
-            <h1>PESATRAK</h1>
+        <div className="login-container">
+            <h1 className="title">PESATRAK</h1> {/* Title of the website */}
             <h2>Login</h2>
             <form onSubmit={handleLogin}>
                 <input
@@ -30,6 +30,7 @@ const Login = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    className="input-field"
                 />
                 <input
                     type="password"
@@ -37,8 +38,9 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    className="input-field"
                 />
-                <button type="submit">Login</button>
+                <button type="submit" className="login-button">Login</button>
             </form>
         </div>
     );
